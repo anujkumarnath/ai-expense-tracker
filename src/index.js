@@ -9,6 +9,7 @@ import { pingDb } from "./db.js";
 import { isFirstOfMonthIST, previousMonthIST } from "./dates.js";
 import { generateMonthlyReport } from "./report.js";
 import {
+  handleGoogleAuth,
   handleParse,
   handleGetExpenses,
   handleCreateExpense,
@@ -66,8 +67,11 @@ async function route(request, env, ctx) {
       return json({ ok: true });
     }
 
+    // --- public: exchange a Google ID token for a dashboard session ---
+    if (method === "POST" && pathname === "/auth/google") return handleGoogleAuth(request, env);
+
     // --- everything below requires auth ---
-    const unauth = requireAuth(request, env);
+    const unauth = await requireAuth(request, env);
     if (unauth) {
       log(`401 ${method} ${pathname}`);
       return unauth;

@@ -96,34 +96,89 @@ document.addEventListener("click", (e) => {
 // ---------- login ----------
 function renderLogin() {
   if (getToken()) return navigate("/dashboard");
+  // Break-glass token field is hidden unless ?token is in the URL.
+  const showToken = new URLSearchParams(location.search).has("token");
+
   app().innerHTML = `
     <div class="login-wrap">
-      <form class="login-card" id="login-form">
+      <div class="login-card">
         <h1>Expense Tracker</h1>
-        <p>Enter your access token to continue.</p>
-        <input type="password" id="token" placeholder="Access token" autocomplete="current-password" autofocus />
-        <div style="height:14px"></div>
-        <button class="btn btn-primary" type="submit">Sign in</button>
+        <p>Sign in to continue.</p>
+        <div id="gbtn"></div>
         <div class="login-error" id="login-error"></div>
-      </form>
+        ${showToken ? `
+        <hr style="border-color:var(--border);margin:18px 0" />
+        <form id="token-form">
+          <input type="password" id="token" placeholder="Access token (fallback)" autocomplete="current-password" />
+          <div style="height:10px"></div>
+          <button class="btn btn-primary" type="submit">Sign in with token</button>
+        </form>` : ""}
+      </div>
     </div>`;
 
-  document.getElementById("login-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const token = document.getElementById("token").value.trim();
-    const errEl = document.getElementById("login-error");
-    errEl.textContent = "";
-    if (!token) { errEl.textContent = "Token required."; return; }
-    setToken(token);
-    try {
-      // validate against a protected endpoint
-      await api("/expenses?month=" + currentMonthIST());
-      navigate("/dashboard");
-    } catch (err) {
-      clearToken();
-      errEl.textContent = err.message === "Unauthorized" ? "Invalid token." : err.message;
+  if (showToken) {
+    document.getElementById("token-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      tokenLogin(document.getElementById("token").value);
+    });
+    // Allow /login?token=<value> to log in directly (break-glass).
+    const preset = new URLSearchParams(location.search).get("token");
+    if (preset) tokenLogin(preset);
+  }
+
+  initGoogle();
+}
+
+async function tokenLogin(raw) {
+  const token = (raw || "").trim();
+  const errEl = document.getElementById("login-error");
+  if (errEl) errEl.textContent = "";
+  if (!token) { if (errEl) errEl.textContent = "Token required."; return; }
+  setToken(token);
+  try {
+    await api("/expenses?month=" + currentMonthIST());
+    history.replaceState({}, "", "/login"); // strip token from the URL
+    navigate("/dashboard");
+  } catch (err) {
+    clearToken();
+    if (errEl) errEl.textContent = err.message === "Unauthorized" ? "Invalid token." : err.message;
+  }
+}
+
+function initGoogle() {
+  const setErr = (m) => { const el = document.getElementById("login-error"); if (el) el.textContent = m; };
+  if (!window.GOOGLE_CLIENT_ID) { setErr("Google sign-in not configured (GOOGLE_CLIENT_ID)."); return; }
+
+  let tries = 0;
+  const t = setInterval(() => {
+    if (window.google?.accounts?.id) {
+      clearInterval(t);
+      google.accounts.id.initialize({ client_id: window.GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+      const el = document.getElementById("gbtn");
+      if (el) google.accounts.id.renderButton(el, { theme: "filled_black", size: "large", text: "signin_with", shape: "pill", width: 280 });
+    } else if (++tries > 50) {
+      clearInterval(t);
+      setErr("Couldn't load Google sign-in.");
     }
-  });
+  }, 100);
+}
+
+async function onGoogleCredential(resp) {
+  const errEl = document.getElementById("login-error");
+  if (errEl) errEl.textContent = "Signing in…";
+  try {
+    const r = await fetch(API_BASE + "/auth/google", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ idToken: resp.credential }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Sign-in failed");
+    setToken(data.token);
+    navigate("/dashboard");
+  } catch (err) {
+    if (errEl) errEl.textContent = err.message;
+  }
 }
 
 // ---------- dashboard ----------
@@ -176,7 +231,11 @@ function renderDashboard() {
       <div id="txns"><div class="loading">Loading…</div></div>
     </div>`;
 
-  document.getElementById("logout").addEventListener("click", () => { clearToken(); navigate("/login"); });
+  document.getElementById("logout").addEventListener("click", () => {
+    clearToken();
+    window.google?.accounts?.id?.disableAutoSelect?.();
+    navigate("/login");
+  });
   document.getElementById("add-btn").addEventListener("click", openAddModal);
 
   document.getElementById("month-picker").addEventListener("change", (e) => {

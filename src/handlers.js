@@ -22,6 +22,31 @@ import { computeSummary, daysInMonth } from "./summary.js";
 import { generateMonthlyReport } from "./report.js";
 import { CATEGORIES } from "./constants.js";
 import { log, errorText } from "./errors.js";
+import { verifyGoogleIdToken } from "./google.js";
+import { signSession } from "./jwt.js";
+
+const SESSION_TTL = 7 * 24 * 3600; // 7 days
+
+// -------- POST /auth/google --------  (public: exchange Google ID token for a session)
+export async function handleGoogleAuth(request, env) {
+  const body = await request.json().catch(() => ({}));
+  const idToken = body.idToken || body.credential;
+  if (!idToken) return json({ error: "Missing idToken" }, 400);
+
+  let user;
+  try {
+    user = await verifyGoogleIdToken(idToken, env);
+  } catch (err) {
+    const code = err.code === "forbidden" ? 403 : err.code === "config" ? 500 : 401;
+    log(`google sign-in rejected: ${err.message}`);
+    return json({ error: err.message || "Sign-in failed" }, code);
+  }
+  if (!env.SESSION_SECRET) return json({ error: "Server not configured: SESSION_SECRET missing" }, 500);
+
+  const token = await signSession({ email: user.email, sub: user.sub }, env.SESSION_SECRET, SESSION_TTL);
+  log(`google sign-in ok: ${user.email}`);
+  return json({ token, email: user.email, expiresIn: SESSION_TTL });
+}
 
 /** Read the natural-language text from the request (raw text or {text:...} JSON). */
 async function readText(request) {

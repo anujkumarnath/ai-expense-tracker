@@ -101,8 +101,16 @@ wrangler secret put SHEETS_SHARED_SECRET   # same value as Apps Script SHARED_SE
 wrangler secret put AUTH_TOKEN             # YOUR chosen dashboard/API token (strong!)
 ```
 
-> `AUTH_TOKEN` is the password you'll type into the dashboard login and send as
-> `Authorization: Bearer <token>` from Tasker. Make it long and random.
+> `AUTH_TOKEN` is the static token for **Tasker/curl** (sent as `Authorization:
+> Bearer <token>`). The **dashboard** signs in with Google (below), not this token —
+> but it stays valid as a break-glass login at `/login?token`.
+
+Dashboard Google sign-in (see §12 to create the OAuth client first):
+```bash
+wrangler secret put SESSION_SECRET    # random key for signing dashboard sessions
+wrangler secret put GOOGLE_CLIENT_ID  # …apps.googleusercontent.com
+wrangler secret put ALLOWED_EMAILS    # comma-separated, e.g. you@gmail.com
+```
 
 Optional — lock browser CORS to your dashboard origin (recommended once you have a
 custom domain). Keeps the URL out of the repo:
@@ -297,6 +305,32 @@ curl -s "$URL/expenses?from=2026-06-01&to=2026-06-07" -H "$H"
 
 The dashboard's **+ Add** button and date-range / MTD controls use exactly these
 endpoints.
+
+## 12. Google Sign-In for the dashboard
+
+The dashboard logs in with **Sign in with Google**, restricted to your email; Tasker
+keeps using the static `AUTH_TOKEN`.
+
+1. Google Cloud Console → **APIs & Services → Google Auth Platform** (OAuth consent):
+   - **Audience:** External. Add yourself under **Test users** (or publish to
+     Production — both fine; only basic `openid email profile` scopes are used, so no
+     verification is needed). `@gmail.com` accounts can't use "Internal".
+   - **Branding:** app name + your support/developer email.
+2. **Clients → Create client → Web application:**
+   - **Authorized JavaScript origins:** your dashboard origin, e.g. `https://tracker.example.com`
+   - **Authorized redirect URIs:** leave empty (ID-token flow needs none).
+   - Copy the **Client ID** (`…apps.googleusercontent.com`).
+3. Put the Client ID in **both** places:
+   - Frontend: `dashboard/config.js` → `window.GOOGLE_CLIENT_ID = "…"`
+   - Worker: `wrangler secret put GOOGLE_CLIENT_ID`
+4. Set `SESSION_SECRET` (random) and `ALLOWED_EMAILS` (your email). Redeploy the Worker.
+
+**Security:** the Worker verifies the Google ID token's audience + issuer, requires a
+verified email, and rejects any address not in `ALLOWED_EMAILS` (403). The publishing
+status doesn't widen access — the allowlist is the gate.
+
+Break-glass: visit `/login?token` to reveal the static-token field if Google sign-in
+is ever misconfigured.
 
 ## Troubleshooting
 

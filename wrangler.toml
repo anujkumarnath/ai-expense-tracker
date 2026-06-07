@@ -16,12 +16,15 @@ crons = ["0 18 * * *"]
 #   GROQ_API_KEY         Groq API key (console.groq.com/keys — free, no card)
 #   SHEETS_WEBHOOK_URL   Google Apps Script web app /exec URL (passive mirror)
 #   SHEETS_SHARED_SECRET Must match SHARED_SECRET script property in Code.gs
-#   AUTH_TOKEN           Static Bearer token for all protected endpoints
+#   AUTH_TOKEN           Static Bearer token (Tasker/curl) — still accepted
+#   SESSION_SECRET       HMAC key for signing dashboard session tokens (Google sign-in)
 #
-# Optional config (kept out of the repo so no hosted URL is committed; set via
-# `wrangler secret put` or a Cloudflare dashboard variable):
+# Config kept out of the repo (set via `wrangler secret put` or a Cloudflare
+# dashboard variable so no hosted URL / id is committed):
 #   DASHBOARD_ORIGIN     Dashboard URL to lock browser CORS to, e.g.
 #                        https://tracker.example.com. Defaults to "*" if unset.
+#   GOOGLE_CLIENT_ID     OAuth Web client ID (…apps.googleusercontent.com)
+#   ALLOWED_EMAILS       Comma-separated allowlist of Google emails that may sign in
 # ---------------------------------------------------------------------------
 
 # Non-secret vars (safe to commit).

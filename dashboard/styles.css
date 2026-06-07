@@ -48,6 +48,7 @@ button { font-family: inherit; cursor: pointer; }
 .login-card h1 { font-size: 1.4rem; margin: 0 0 4px; }
 .login-card p { color: var(--text-dim); margin: 0 0 24px; font-size: 0.9rem; }
 .login-error { color: var(--danger); font-size: 0.85rem; min-height: 1.1em; margin-top: 10px; }
+#gbtn { display: flex; justify-content: center; margin-top: 8px; }
 
 /* ---------- Forms ---------- */
 input, select {
