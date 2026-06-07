@@ -1,0 +1,16 @@
+node_modules/
+.wrangler/
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+*.log
+.DS_Store
+dist/
+old-expenses.csv
+
+# local dashboard config (copy of config.example.js)
+dashboard/config.js
+
+# one-off migration script with personal data — kept local, not committed
+scripts/

@@ -1,0 +1,30 @@
+name = "expense-tracker"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+# Required so the official `mongodb` driver can open TCP sockets to Atlas
+compatibility_flags = ["nodejs_compat"]
+
+# Cron: "0 18 * * *" UTC == 00:00 IST (UTC+5:30 -> 18:00 prev day UTC).
+# Handler checks if it's the 1st of the month in IST before generating the report.
+[triggers]
+crons = ["0 18 * * *"]
+
+# ---------------------------------------------------------------------------
+# Secrets are NOT stored here. Set them with `wrangler secret put <NAME>`:
+#   MONGODB_URI          Atlas connection string
+#   GROQ_API_KEY         Groq API key (console.groq.com/keys — free, no card)
+#   SHEETS_WEBHOOK_URL   Google Apps Script web app /exec URL (passive mirror)
+#   SHEETS_SHARED_SECRET Must match SHARED_SECRET script property in Code.gs
+#   AUTH_TOKEN           Static Bearer token for all protected endpoints
+#
+# Optional config (kept out of the repo so no hosted URL is committed; set via
+# `wrangler secret put` or a Cloudflare dashboard variable):
+#   DASHBOARD_ORIGIN     Dashboard URL to lock browser CORS to, e.g.
+#                        https://tracker.example.com. Defaults to "*" if unset.
+# ---------------------------------------------------------------------------
+
+# Non-secret vars (safe to commit).
+[vars]
+DB_NAME = "expense_tracker"
+GROQ_MODEL = "llama-3.3-70b-versatile"
