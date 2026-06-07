@@ -215,6 +215,48 @@ tbody tr:hover { background: var(--bg-elev-2); }
   .container, .report { padding: 16px; }
 }
 
+/* ---------- Voice FAB + toast (PWA) ---------- */
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 1.5rem;
+  box-shadow: var(--shadow);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fab:hover { background: #3d7bff; }
+.fab:active { transform: scale(0.94); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%) translateY(16px);
+  max-width: 88%;
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  font-size: 0.9rem;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 60;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* ---------- Print (report PDF) ---------- */
 @media print {
   :root {
@@ -222,7 +264,7 @@ tbody tr:hover { background: var(--bg-elev-2); }
     --border: #d0d7de; --text: #1c2128; --text-dim: #57606a;
   }
   body { background: #fff; }
-  .no-print { display: none !important; }
+  .no-print, .fab, .toast { display: none !important; }
   .report { padding: 0; max-width: 100%; }
   .panel, .card { break-inside: avoid; }
 }

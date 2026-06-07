@@ -332,6 +332,25 @@ status doesn't widen access — the allowlist is the gate.
 Break-glass: visit `/login?token` to reveal the static-token field if Google sign-in
 is ever misconfigured.
 
+## 13. Install as an app (PWA) + voice button
+
+The dashboard is a Progressive Web App: installable, full-screen, offline shell,
+with an in-app mic button — no Tasker needed.
+
+Files: `manifest.webmanifest`, `sw.js` (service worker, network-first shell cache),
+`icons/icon-192.png` + `icon-512.png`.
+
+**Install (Android Chrome):** open `https://tracker.<domain>` → ⋮ menu →
+**Add to Home screen / Install app** → launches standalone with its own icon.
+
+**Voice logging:** tap the floating **🎤** button → allow mic once → speak
+*"spent 450 on groceries via GPay"* → it POSTs to `/parse` and toasts the result.
+Uses the browser **Web Speech API** (Android Chrome / desktop Chrome; falls back to a
+text prompt where unsupported, e.g. Firefox). HTTPS is required (already satisfied).
+
+> The service worker caches the app shell network-first, so deploys aren't served
+> stale; API calls are never cached.
+
 ## Troubleshooting
 
 | Symptom | Fix |

@@ -55,6 +55,59 @@ async function api(path, opts = {}) {
   return data;
 }
 
+// POST raw text to /parse (returns a plain-text confirmation, not JSON).
+async function sendParse(text) {
+  const res = await fetch(API_BASE + "/parse", {
+    method: "POST",
+    headers: { Authorization: "Bearer " + getToken(), "Content-Type": "text/plain" },
+    body: text,
+  });
+  if (res.status === 401) { clearToken(); navigate("/login"); throw new Error("Unauthorized"); }
+  return res.text();
+}
+
+// ---------- toast ----------
+let toastTimer = null;
+function toast(msg, sticky = false) {
+  let el = document.getElementById("toast");
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; document.body.appendChild(el); }
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  if (!sticky) toastTimer = setTimeout(() => el.classList.remove("show"), 4500);
+}
+
+// ---------- voice logging (Web Speech API) ----------
+function startVoiceLog() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    // Fallback for browsers without speech recognition: type it.
+    const text = prompt("Log expense:");
+    if (text) submitExpenseText(text);
+    return;
+  }
+  const r = new SR();
+  r.lang = "en-IN";
+  r.interimResults = false;
+  r.maxAlternatives = 1;
+  toast("🎤 Listening…", true);
+  r.onresult = (e) => submitExpenseText(e.results[0][0].transcript);
+  r.onerror = (e) => toast(e.error === "no-speech" ? "Didn't catch that — try again" : "⚠️ Voice error: " + e.error);
+  r.start();
+}
+
+async function submitExpenseText(text) {
+  if (!text || !text.trim()) return;
+  toast("Sending: " + text);
+  try {
+    const msg = await sendParse(text);
+    toast(msg);
+    if (typeof loadDashboard === "function") loadDashboard();
+  } catch (err) {
+    if (err.message !== "Unauthorized") toast("⚠️ " + err.message);
+  }
+}
+
 // ---------- router ----------
 let refreshTimer = null;
 let charts = [];
@@ -229,8 +282,10 @@ function renderDashboard() {
       <div id="summary"></div>
       <div id="charts"></div>
       <div id="txns"><div class="loading">Loading…</div></div>
-    </div>`;
+    </div>
+    <button class="fab" id="voice-fab" title="Log by voice" aria-label="Log by voice">🎤</button>`;
 
+  document.getElementById("voice-fab").addEventListener("click", startVoiceLog);
   document.getElementById("logout").addEventListener("click", () => {
     clearToken();
     window.google?.accounts?.id?.disableAutoSelect?.();
@@ -642,4 +697,7 @@ async function renderReport(month) {
 }
 
 // ---------- boot ----------
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+}
 route();
