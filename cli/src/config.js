@@ -42,11 +42,15 @@ export function settings() {
   return {
     apiBase: (process.env.EXPENSE_API_BASE || file.apiBase || DEFAULT_BASE || "").replace(/\/+$/, ""),
     token: process.env.EXPENSE_TOKEN || file.token || "",
-    source: process.env.EXPENSE_TOKEN
-      ? "env"
-      : file.token
-        ? "file"
-        : "none",
+    source: process.env.EXPENSE_TOKEN ? "env" : file.token ? "file" : "none",
+    // Auth kind for display: a Google session carries an email + expiry.
+    authKind: process.env.EXPENSE_TOKEN ? "static" : file.email ? "google" : file.token ? "static" : "none",
+    email: file.email || "",
+    tokenExpiry: file.tokenExpiry || 0, // epoch ms
+    // Desktop OAuth client used by `exp login` (client_secret is non-confidential
+    // per Google for installed apps; still kept in the 0600 config, never committed).
+    googleClientId: process.env.EXPENSE_GOOGLE_CLIENT_ID || file.googleClientId || "",
+    googleClientSecret: process.env.EXPENSE_GOOGLE_CLIENT_SECRET || file.googleClientSecret || "",
   };
 }
 

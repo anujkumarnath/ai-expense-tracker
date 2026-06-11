@@ -21,7 +21,8 @@ export async function run() {
   if (!token || !apiBase) {
     nl();
     log(`${c.yellow("●")} Welcome to ${c.bold("Expense CLI")}.`);
-    log(`  Run ${c.cyan("exp config")} to connect, then ${c.cyan('exp "spent 250 on lunch"')}.`);
+    log(`  Sign in with ${c.cyan("exp login")} (Google) or ${c.cyan("exp config")} (token),`);
+    log(`  then ${c.cyan('exp "spent 250 on lunch"')}.`);
     nl();
     return;
   }

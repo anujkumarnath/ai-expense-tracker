@@ -66,7 +66,7 @@ async function call(method, path, { body, raw = false, auth = true, timeout = 20
   if (!res.ok) {
     const msg = isJson ? data.error || JSON.stringify(data) : data || res.statusText;
     let hint;
-    if (res.status === 401) hint = "Token rejected. Re-run `exp config`.";
+    if (res.status === 401) hint = "Session expired or token rejected. Run `exp login` (or `exp config`).";
     if (res.status === 404) hint = undefined;
     throw new ApiError(String(msg).trim(), { status: res.status, hint });
   }
@@ -75,6 +75,7 @@ async function call(method, path, { body, raw = false, auth = true, timeout = 20
 
 export const api = {
   health: () => call("GET", "/health?check=db", { auth: false }),
+  googleAuth: (idToken) => call("POST", "/auth/google", { body: { idToken }, auth: false }),
   parse: (text) => call("POST", "/parse", { body: text, raw: true }),
   list: (qs) => call("GET", `/expenses${qs ? "?" + qs : ""}`),
   create: (body) => call("POST", "/expenses", { body }),

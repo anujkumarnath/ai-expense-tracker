@@ -4,7 +4,12 @@
 // only at login (≈ once per session), so the extra round-trip is fine.
 
 export async function verifyGoogleIdToken(idToken, env) {
-  if (!env.GOOGLE_CLIENT_ID) throw new Error("GOOGLE_CLIENT_ID is not set");
+  // Accept the dashboard's web client plus any extra clients (e.g. the CLI's
+  // Desktop OAuth client) listed in GOOGLE_CLIENT_IDS (comma-separated).
+  const allowedAud = [env.GOOGLE_CLIENT_ID, ...String(env.GOOGLE_CLIENT_IDS || "").split(",")]
+    .map((s) => (s || "").trim())
+    .filter(Boolean);
+  if (allowedAud.length === 0) throw new Error("GOOGLE_CLIENT_ID is not set");
   if (!idToken) throw new Error("Missing Google token");
 
   const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
@@ -13,7 +18,7 @@ export async function verifyGoogleIdToken(idToken, env) {
 
   const iss = info.iss || "";
   if (iss !== "accounts.google.com" && iss !== "https://accounts.google.com") throw new Error("Bad token issuer");
-  if (info.aud !== env.GOOGLE_CLIENT_ID) throw new Error("Token audience mismatch");
+  if (!allowedAud.includes(info.aud)) throw new Error("Token audience mismatch");
   if (String(info.email_verified) !== "true") throw new Error("Google email not verified");
   if (Number(info.exp) * 1000 < Date.now()) throw new Error("Google token expired");
 

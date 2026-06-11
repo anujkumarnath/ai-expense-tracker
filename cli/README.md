@@ -37,6 +37,39 @@ Or just run it directly: `node bin/exp.js <args>` (alias it to `exp` if you like
 
 ## Setup
 
+### Option A — Sign in with Google (recommended)
+
+A clean browser sign-in (OAuth 2.0 with PKCE + loopback, like `gcloud`/`gh`):
+
+```bash
+exp login           # opens the browser, pick your account, done — saves a 7-day session
+exp whoami          # who am I signed in as?
+exp logout          # forget it
+```
+
+**One-time setup** (because any browser OAuth needs a Google client):
+
+1. **Set the API base** if you haven't: `exp config set apiBase https://<your-api>`.
+2. **Create a Desktop OAuth client** — Google Cloud Console → *APIs & Services →
+   Credentials → Create credentials → OAuth client ID → Application type:
+   **Desktop app***. No redirect URIs to configure (loopback is automatic).
+3. **Tell the Worker to accept it** — add the new client ID to the Worker's
+   accepted audiences and redeploy:
+   ```bash
+   npx wrangler secret put GOOGLE_CLIENT_IDS   # paste the Desktop client ID
+   npx wrangler deploy
+   ```
+   (Your email must already be in the Worker's `ALLOWED_EMAILS`.)
+4. **Run `exp login`** — it asks once for the Desktop client ID + secret (stored
+   in the `600` config, never committed), opens the browser, and saves the
+   session token. Next time it's just `exp login`.
+
+The Desktop "client secret" is non-confidential by Google's design for installed
+apps; it's kept in your local config only. When the 7-day session lapses, run
+`exp login` again.
+
+### Option B — Static token
+
 ```bash
 exp config          # prompts for API base URL + auth token, then tests the connection
 ```
@@ -86,7 +119,10 @@ exp report                               This month's report
 exp report 2026-05                       A specific month
 exp report 2026-05 --gen                 Generate / regenerate the report
 
-exp config                               Setup / re-auth
+exp login                                Sign in with Google (browser)
+exp whoami                               Show the signed-in account
+exp logout                               Forget the saved session/token
+exp config                               Setup / re-auth (static token)
 exp config --show                        Show current settings (token masked)
 exp config --test                        Verify connectivity + token
 exp help [command]                       Help, optionally for one command
@@ -102,6 +138,7 @@ another month). Full 24-char ids are accepted too.
 
 | Command            | Endpoint                         |
 | ------------------ | -------------------------------- |
+| `login`            | Google OAuth → `POST /auth/google` → session token |
 | `parse` / NL input | `POST /parse`                    |
 | `ls` / `chart`     | `GET /expenses?month=` / `?from=&to=` |
 | `new`              | `POST /expenses`                 |

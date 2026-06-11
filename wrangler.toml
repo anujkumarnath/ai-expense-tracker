@@ -24,6 +24,8 @@ crons = ["0 18 * * *"]
 #   DASHBOARD_ORIGIN     Dashboard URL to lock browser CORS to, e.g.
 #                        https://tracker.example.com. Defaults to "*" if unset.
 #   GOOGLE_CLIENT_ID     OAuth Web client ID (…apps.googleusercontent.com)
+#   GOOGLE_CLIENT_IDS    Optional, comma-separated extra accepted audiences, e.g.
+#                        the CLI's Desktop OAuth client ID (used by `exp login`)
 #   ALLOWED_EMAILS       Comma-separated allowlist of Google emails that may sign in
 # ---------------------------------------------------------------------------
 

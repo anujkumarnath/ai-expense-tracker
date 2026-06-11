@@ -42,4 +42,21 @@ async function main() {
   return runParse(argv);
 }
 
-main().catch(die);
+// One-shot CLI: once the command resolves there is no more useful work, but
+// keep-alive sockets (undici/global fetch, the loopback server) can keep the
+// event loop alive for seconds. Flush output, then exit deterministically.
+function shutdown(code) {
+  const exit = () => process.exit(code);
+  const streams = [process.stdout, process.stderr].filter((s) => s.writableLength > 0);
+  if (streams.length === 0) return exit();
+  let remaining = streams.length;
+  for (const s of streams) s.once("drain", () => --remaining === 0 && exit());
+  setTimeout(exit, 1500).unref(); // safety net if a drain never fires
+}
+
+main()
+  .then(() => shutdown(process.exitCode ?? 0))
+  .catch((err) => {
+    die(err);
+    shutdown(process.exitCode ?? 1);
+  });

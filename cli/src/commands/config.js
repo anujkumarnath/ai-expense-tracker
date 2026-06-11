@@ -13,7 +13,7 @@ import { c, log, nl, spinner } from "../ui.js";
 
 export const meta = {
   name: "config",
-  aliases: ["login", "setup"],
+  aliases: ["setup"],
   summary: "Set up the API base URL and auth token.",
   usage: "exp config [--show] [--test] | exp config set <apiBase|token> <value>",
 };
@@ -43,8 +43,16 @@ export async function run(argv) {
   if (values.show) {
     const s = settings();
     nl();
-    log(`${c.dim("API base")}   ${s.apiBase}`);
-    log(`${c.dim("Token")}      ${mask(s.token)} ${c.dim("(" + s.source + ")")}`);
+    log(`${c.dim("API base")}   ${s.apiBase || c.dim("(unset)")}`);
+    if (s.authKind === "google") {
+      const left = s.tokenExpiry ? s.tokenExpiry - Date.now() : 0;
+      const exp = left <= 0 ? c.red("expired") : `${Math.floor(left / 86400000)}d left`;
+      log(`${c.dim("Signed in")}  ${s.email} ${c.dim("(Google · " + exp + ")")}`);
+    } else if (s.token) {
+      log(`${c.dim("Token")}      ${mask(s.token)} ${c.dim("(static · " + s.source + ")")}`);
+    } else {
+      log(`${c.dim("Auth")}       ${c.dim("(not signed in — run `exp login` or `exp config`)")}`);
+    }
     log(`${c.dim("Config")}     ${configPath()}`);
     nl();
     return;
