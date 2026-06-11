@@ -1,0 +1,21 @@
+{
+  "name": "expense-cli",
+  "version": "1.0.0",
+  "description": "Beautiful, fast CLI for the natural-language expense tracker. Linux + macOS, zero dependencies.",
+  "type": "module",
+  "bin": {
+    "exp": "bin/exp.js"
+  },
+  "engines": {
+    "node": ">=18.3.0"
+  },
+  "scripts": {
+    "start": "node bin/exp.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "license": "MIT"
+}

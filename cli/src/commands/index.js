@@ -1,0 +1,20 @@
+// Command registry: maps every name and alias to its module.
+
+import * as list from "./list.js";
+import * as parse from "./parse.js";
+import * as neu from "./new.js";
+import * as edit from "./edit.js";
+import * as rm from "./rm.js";
+import * as chart from "./chart.js";
+import * as report from "./report.js";
+import * as config from "./config.js";
+import * as home from "./home.js";
+import * as help from "./help.js";
+
+const modules = [list, parse, neu, edit, rm, chart, report, config, home, help];
+
+export const registry = {};
+for (const mod of modules) {
+  registry[mod.meta.name] = mod;
+  for (const alias of mod.meta.aliases || []) registry[alias] = mod;
+}
