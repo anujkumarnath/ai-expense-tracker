@@ -4,6 +4,9 @@ A fast, beautiful command-line client for the natural-language expense tracker.
 Log, list, edit, delete and report on your spending without leaving the terminal.
 
 - **Plain English** — `exp spent 450 on groceries via gpay`
+- **Full-screen TUI** — `exp` opens an interactive dashboard: stat tiles, category
+  bars, a daily-trend chart, and a browsable transaction table with vim + arrow
+  keys, live `/` filtering, an edit modal, and flicker-free diff rendering
 - **Beautiful** — coloured summary cards, category bars, aligned tables, and
   dashboard-style charts (stacked category share + daily-trend column chart)
 - **Less movement** — smart dispatch (no subcommand needed for the common case) and
@@ -90,7 +93,8 @@ Resolution order: **env vars → config file → default base**.
 ## Usage
 
 ```text
-exp                                     This month at a glance + inline prompt
+exp                                     Interactive TUI dashboard (exp tui / exp ui)
+exp home                                This month at a glance + inline prompt (static)
 exp "spent 450 on groceries via gpay"   Log it (AI parses ADD/SPLIT/UPDATE/DELETE)
 exp spent 60 on chai                    Quotes optional — anything unrecognised is parsed
 exp "fix the last grocery, it was 380"  Natural-language update
@@ -127,6 +131,25 @@ exp config --show                        Show current settings (token masked)
 exp config --test                        Verify connectivity + token
 exp help [command]                       Help, optionally for one command
 ```
+
+### The TUI
+
+`exp` (or `exp tui`) opens the full-screen dashboard. Three tabs — **Overview**
+(stat tiles, category bars, daily-trend chart), **Transactions** (the full
+table), and **Reports** (stored monthly snapshots) — all responsive down to
+60×16. Keys (vim and normal styles both work):
+
+```text
+tab · 1 2 3            switch view              a · n · o   add (plain English)
+h l · ← →              previous / next month    e · enter   edit selected (modal)
+j k · ↑ ↓              move selection           d · x       delete (confirms)
+gg · G                 first / last row         /           live filter (esc clears)
+ctrl-d/u · pgdn/pgup   half page / page         s           sort by amount / date
+t                      current month            g           generate report (reports tab)
+?                      help                     r · q       refresh · quit
+```
+
+When piped (not a TTY), `exp` falls back to the static `exp home` view.
 
 ### Refs
 

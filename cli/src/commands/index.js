@@ -13,8 +13,9 @@ import * as whoami from "./whoami.js";
 import * as config from "./config.js";
 import * as home from "./home.js";
 import * as help from "./help.js";
+import * as tui from "./tui.js";
 
-const modules = [list, parse, neu, edit, rm, chart, report, login, logout, whoami, config, home, help];
+const modules = [list, parse, neu, edit, rm, chart, report, login, logout, whoami, config, home, help, tui];
 
 export const registry = {};
 for (const mod of modules) {

@@ -11,12 +11,17 @@ const useColor =
 const E = (open, close) => (s) =>
   useColor ? `\x1b[${open}m${s}\x1b[${close}m` : String(s);
 
+// 256-color backgrounds where the terminal supports them, ANSI-16 otherwise.
+const use256 =
+  process.env.COLORTERM || /256color|truecolor/i.test(process.env.TERM || "");
+
 export const c = {
   reset: (s) => s,
   bold: E(1, 22),
   dim: E(2, 22),
   italic: E(3, 23),
   underline: E(4, 24),
+  reverse: E(7, 27),
   red: E(31, 39),
   green: E(32, 39),
   yellow: E(33, 39),
@@ -27,6 +32,10 @@ export const c = {
   white: E(97, 39),
   bgGreen: E(42, 49),
   bgBlue: E(44, 49),
+  // Header and footer share one dark, neutral band so accent colors (tabs,
+  // money, keys) stay readable and the chrome feels coherent.
+  bgGray: use256 ? E("48;5;235", 49) : E(100, 49),
+  bgHeader: use256 ? E("48;5;235", 49) : E(100, 49),
 };
 
 // Width of a string ignoring ANSI escapes and counting emoji as 2 cols.
@@ -36,8 +45,11 @@ export function width(s) {
   let w = 0;
   for (const ch of plain) {
     const cp = ch.codePointAt(0);
-    // Wide ranges: CJK + most emoji/symbols.
-    w += cp >= 0x1100 && (cp >= 0x1f000 || cp >= 0x2600) ? 2 : 1;
+    // Wide ranges: CJK + most emoji/symbols. Braille (spinners) is narrow.
+    const wide =
+      cp >= 0x1100 &&
+      (cp >= 0x1f000 || (cp >= 0x2600 && !(cp >= 0x2800 && cp <= 0x28ff)));
+    w += wide ? 2 : 1;
   }
   return w;
 }
@@ -55,13 +67,27 @@ export function pad(s, len, align = "left") {
 export function truncate(s, max) {
   s = String(s);
   if (width(s) <= max) return s;
+  // Cut visible characters but keep every ANSI escape, so a clipped line
+  // doesn't silently lose its colors (closing codes stay balanced too).
   let out = "";
   let w = 0;
-  for (const ch of s.replace(ANSI, "")) {
-    const cw = width(ch);
-    if (w + cw > max - 1) break;
-    out += ch;
-    w += cw;
+  let full = false;
+  for (const part of s.split(/(\x1b\[[0-9;]*m)/)) {
+    if (!part) continue;
+    if (part.startsWith("\x1b[")) {
+      out += part;
+      continue;
+    }
+    if (full) continue;
+    for (const ch of part) {
+      const cw = width(ch);
+      if (w + cw > max - 1) {
+        full = true;
+        break;
+      }
+      out += ch;
+      w += cw;
+    }
   }
   return out + "…";
 }
@@ -87,25 +113,52 @@ export function moneyShort(n) {
   return "₹" + Math.round(v);
 }
 
-// Stable color per category so the eye learns them.
-const CAT_COLOR = {
-  Food: c.yellow,
-  Groceries: c.green,
-  Transport: c.cyan,
-  Shopping: c.magenta,
-  Bills: c.red,
-  Health: c.blue,
-  Entertainment: c.magenta,
-  Subscriptions: c.blue,
-  Investment: c.green,
-  Other: c.gray,
+// Stable, *distinct* color per category so the eye learns them — a dot in a
+// legend always matches its bar. 256-color terminals get a curated palette;
+// ANSI-16 falls back to deduplicated hues (bright variants break the ties).
+const fg256 = (n) => E(`38;5;${n}`, 39);
+const CAT_COLOR = use256
+  ? {
+      Food: fg256(214),          // orange
+      Groceries: fg256(112),     // apple green
+      Transport: fg256(75),      // sky blue
+      Shopping: fg256(213),      // pink
+      Bills: fg256(203),         // coral red
+      Health: fg256(123),        // ice cyan
+      Entertainment: fg256(135), // violet
+      Subscriptions: fg256(227), // light yellow
+      Investment: fg256(36),     // teal
+      Other: fg256(245),         // gray
+    }
+  : {
+      Food: c.yellow,
+      Groceries: c.green,
+      Transport: c.cyan,
+      Shopping: c.magenta,
+      Bills: c.red,
+      Health: c.blue,
+      Entertainment: E(95, 39), // bright magenta
+      Subscriptions: E(94, 39), // bright blue
+      Investment: E(92, 39),    // bright green
+      Other: c.gray,
+    };
+// Unknown categories hash onto extra hues instead of all rendering white.
+const CAT_EXTRA = use256
+  ? [167, 73, 137, 179, 65, 132, 108, 174].map(fg256)
+  : [E(91, 39), E(93, 39), E(96, 39), c.magenta, c.cyan, c.yellow];
+export const catColor = (cat) => {
+  if (!cat) return c.white;
+  if (CAT_COLOR[cat]) return CAT_COLOR[cat];
+  let h = 0;
+  for (const ch of String(cat)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return CAT_EXTRA[h % CAT_EXTRA.length];
 };
-export const catColor = (cat) => CAT_COLOR[cat] || c.white;
 export const dot = (cat) => catColor(cat)("●");
 
-// Horizontal bar made of block glyphs.
+// Horizontal bar made of block glyphs. Non-zero values always show a sliver.
 export function bar(fraction, len = 18) {
-  const full = Math.round(Math.max(0, Math.min(1, fraction)) * len);
+  const f = Math.max(0, Math.min(1, fraction));
+  const full = f > 0 ? Math.max(1, Math.round(f * len)) : 0;
   return "█".repeat(full) + c.dim("░".repeat(len - full));
 }
 
@@ -137,7 +190,10 @@ export function columnChart(points, opts = {}) {
     const lbl = r === height - 1 ? format(max) : r === 0 ? format(0) : "";
     let row = c.dim(pad(lbl, gutter, "right")) + c.dim(" │");
     for (let i = 0; i < points.length; i++) {
-      const eighths = Math.round((points[i].value / max) * height * 8);
+      // Any non-zero value shows at least a sliver — nothing vanishes.
+      const eighths = points[i].value > 0
+        ? Math.max(1, Math.round((points[i].value / max) * height * 8))
+        : 0;
       const cell = Math.max(0, Math.min(8, eighths - r * 8));
       const g = V8[cell];
       const col = i === peakI ? peakColor : color;
@@ -147,13 +203,17 @@ export function columnChart(points, opts = {}) {
   }
   // Baseline.
   lines.push(" ".repeat(gutter) + c.dim(" └" + "─".repeat(points.length * colW)));
-  // X-axis labels (thin out so they don't collide).
-  const step = Math.max(1, Math.ceil((points.length * colW) / 16 / colW) * 1);
-  let xl = " ".repeat(gutter + 2);
-  for (let i = 0; i < points.length; i++) {
-    xl += i % step === 0 ? c.dim(pad(String(points[i].label), colW)) : " ".repeat(colW);
+  // X-axis labels, placed at each bar's exact column and thinned so labels
+  // never collide (works for any colW, including 1).
+  const lblW = Math.max(...points.map((p) => width(String(p.label))));
+  const step = Math.max(1, Math.ceil((lblW + 1) / colW));
+  let axis = "";
+  for (let i = 0; i < points.length; i += step) {
+    const at = i * colW;
+    if (at < width(axis)) continue;
+    axis += " ".repeat(at - width(axis)) + String(points[i].label);
   }
-  lines.push(xl);
+  lines.push(" ".repeat(gutter + 2) + c.dim(axis));
   return lines.join("\n");
 }
 

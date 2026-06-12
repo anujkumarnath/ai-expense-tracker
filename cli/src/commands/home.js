@@ -12,8 +12,8 @@ import { run as parseRun } from "./parse.js";
 export const meta = {
   name: "home",
   aliases: [],
-  summary: "This month at a glance (default).",
-  usage: "exp",
+  summary: "This month at a glance (static; the default when output is piped).",
+  usage: "exp home",
 };
 
 export async function run() {

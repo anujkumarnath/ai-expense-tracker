@@ -29,7 +29,7 @@ export function run(argv = []) {
   log(c.bold("  Quick start"));
   log(`    ${c.green("exp login")}                                ${c.dim("sign in with Google")}`);
   log(`    ${c.green('exp "spent 450 on groceries via gpay"')}   ${c.dim("log it")}`);
-  log(`    ${c.green("exp")}                                      ${c.dim("this month + prompt")}`);
+  log(`    ${c.green("exp")}                                      ${c.dim("interactive dashboard (TUI)")}`);
   log(`    ${c.green("exp ls")}                                   ${c.dim("list transactions")}`);
   log(`    ${c.green("exp chart")}                                ${c.dim("visual dashboard")}`);
   nl();

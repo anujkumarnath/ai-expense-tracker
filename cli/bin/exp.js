@@ -2,7 +2,7 @@
 // Expense CLI — entry point and dispatcher.
 //
 // Dispatch rules (designed for "less movement"):
-//   exp                        → home dashboard
+//   exp                        → interactive TUI (static home view when piped)
 //   exp <command> [args]       → that command
 //   exp <anything else>        → natural-language parse (the common case)
 //
@@ -10,6 +10,7 @@
 
 import { registry } from "../src/commands/index.js";
 import { run as runHome } from "../src/commands/home.js";
+import { run as runTui } from "../src/commands/tui.js";
 import { run as runParse } from "../src/commands/parse.js";
 import { run as runHelp, VERSION } from "../src/commands/help.js";
 import { die } from "../src/helpers.js";
@@ -22,7 +23,9 @@ async function main() {
     console.log("expense-cli v" + VERSION);
     return;
   }
-  if (argv.length === 0) return runHome();
+  if (argv.length === 0) {
+    return process.stdin.isTTY && process.stdout.isTTY ? runTui() : runHome();
+  }
 
   const first = argv[0];
   const rest = argv.slice(1);
