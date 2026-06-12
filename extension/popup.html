@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">💸 <span id="month">Expense</span></div>
+    <div class="total" id="total"></div>
+  </header>
+
+  <!-- Setup prompt (shown until apiBase + token + permission are in place) -->
+  <section id="setup" class="card hidden">
+    <p id="setup-msg">Connect the extension to your expense tracker to get started.</p>
+    <button id="setup-btn" class="btn primary">Open settings</button>
+    <button id="grant-btn" class="btn primary hidden">Grant access to the API</button>
+  </section>
+
+  <!-- Main UI -->
+  <section id="main" class="hidden">
+    <form id="add-form" autocomplete="off">
+      <input id="add-input" type="text" placeholder='e.g. "coffee 120 at blue tokai via upi"' />
+      <button class="btn primary" type="submit" id="add-btn">Log</button>
+    </form>
+    <p id="status" class="status"></p>
+
+    <div id="breakdown" class="card"></div>
+    <div id="recent" class="card"></div>
+  </section>
+
+  <footer>
+    <a href="#" id="open-options">Settings</a>
+    <span class="dim" id="hint">Tip: select text on any page → right-click → log as expense</span>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

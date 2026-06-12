@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="color-scheme" content="dark" />
+  <title>Expense Tracker — Settings</title>
+  <link rel="stylesheet" href="popup.css" />
+  <style>
+    body { width: auto; max-width: 480px; margin: 40px auto; padding: 0 16px; background: var(--bg); }
+    html { background: var(--bg); }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .sub { color: var(--text-dim); margin: 0 0 20px; font-size: 13px; }
+    label { display: block; font-size: 12px; color: var(--text-dim); margin: 14px 0 6px; }
+    input { width: 100%; padding: 10px 12px; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 13px; outline: none; }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .row { display: flex; gap: 10px; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <h1>💸 Expense Tracker</h1>
+  <p class="sub">
+    Point the extension at your Worker API. Same credentials as
+    <code>exp config</code> in the CLI — the token is stored only in this
+    browser profile (<code>chrome.storage.local</code>), never synced.
+  </p>
+
+  <label for="apiBase">API base URL</label>
+  <input id="apiBase" type="url" placeholder="https://expense-tracker.&lt;you&gt;.workers.dev" />
+
+  <label for="token">Auth token</label>
+  <input id="token" type="password" placeholder="Bearer token (or a Google session token)" />
+
+  <div class="row">
+    <button id="save" class="btn primary">Save &amp; test</button>
+  </div>
+  <p id="status" class="status"></p>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

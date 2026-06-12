@@ -1,0 +1,166 @@
+/* Same design tokens as the dashboard, sized for a popup. */
+:root {
+  --bg: #0d1117;
+  --bg-elev: #161b22;
+  --bg-elev-2: #1c2129;
+  --border: #2a2f37;
+  --text: #e6edf3;
+  --text-dim: #9aa4b2;
+  --accent: #4f8cff;
+  --accent-soft: rgba(79, 140, 255, 0.15);
+  --danger: #f85149;
+  --success: #3fb950;
+}
+
+* { box-sizing: border-box; }
+
+:root { color-scheme: dark; }
+body {
+  width: 360px;
+  margin: 0;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden { display: none !important; }
+.dim { color: var(--text-dim); }
+
+header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.brand { font-weight: 600; font-size: 14px; }
+.total { font-weight: 700; font-size: 16px; color: var(--success); }
+
+.card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 10px;
+}
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+#add-form { display: flex; gap: 8px; }
+#add-input {
+  flex: 1;
+  padding: 9px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+#add-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.btn {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border-radius: 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn:hover { background: #232a33; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.1); }
+.btn:disabled { opacity: 0.6; cursor: wait; }
+
+.status { min-height: 1.2em; margin: 8px 2px 0; font-size: 12px; color: var(--text-dim); }
+.status.ok { color: var(--success); }
+.status.err { color: var(--danger); }
+
+/* Category bars */
+.cat-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.cat-dot { width: 10px; height: 10px; border-radius: 50%; }
+.cat-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-amt { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.cat-bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--bg-elev-2); overflow: hidden; }
+.cat-bar i { display: block; height: 100%; border-radius: 3px; }
+
+/* Recent list */
+.tx-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tx-row:last-child { border-bottom: none; }
+.tx-date { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.tx-item { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-amt { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Row actions (appear on hover) */
+.tx-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.12s; }
+.tx-row:hover .tx-actions, .tx-actions:focus-within { opacity: 1; }
+.icon {
+  padding: 2px 7px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.icon:hover { border-color: var(--border); background: var(--bg-elev-2); color: var(--text); }
+.act-del.armed { color: #fff; background: var(--danger); border-color: var(--danger); opacity: 1; }
+
+/* Inline editor */
+.tx-edit {
+  display: grid;
+  grid-template-columns: 72px 1fr 6.6em auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tx-edit:last-child { border-bottom: none; }
+.tx-edit input, .tx-edit select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  outline: none;
+}
+.tx-edit input:focus, .tx-edit select:focus { border-color: var(--accent); }
+
+.empty { color: var(--text-dim); text-align: center; padding: 8px 0; }
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 11px;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer .dim { text-align: right; }
+
+#setup p { margin: 0 0 10px; color: var(--text-dim); }

@@ -17,6 +17,10 @@ Google Sheet, and shows it on a dark analytics dashboard. Runs entirely on free 
 - **Dashboard** (Cloudflare Pages): summary cards, category donut + daily-trend charts,
   paginated table with inline add/edit/delete, month picker + custom date-range / MTD,
   30s auto-refresh.
+- **CLI + TUI** (`cli/`): zero-dependency terminal client — `exp "spent 450 on chai"`,
+  plus a full-screen interactive dashboard (`exp`) with vim keybindings.
+- **Browser extension** (`extension/`): quick-add popup (Ctrl+Shift+E), month at a
+  glance, and right-click "log selection as expense" on any page. MV3, zero deps.
 - **Monthly reports**: auto-generated on the 1st (IST) via cron, or on demand; printable.
 - **Google Sheets mirror**: every add/update mirrored to a Sheet as a passive backup.
 - **Manual REST API** for use without the LLM.
@@ -75,6 +79,8 @@ npx wrangler pages deploy dashboard --project-name expense-tracker-dashboard
 ```
 src/            Worker: routing, auth, LLM parsing, handlers, DB, reports
 dashboard/      Cloudflare Pages SPA (login, dashboard, report)
+cli/            Terminal client + full-screen TUI (zero dependencies)
+extension/      Chrome/Edge MV3 extension (quick-add popup, context menu)
 apps-script/    Google Apps Script Sheets mirror (Code.gs)
 scripts/        One-off migration helper
 SETUP.md        Full setup & deployment guide
