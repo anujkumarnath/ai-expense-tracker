@@ -5,7 +5,7 @@
 import { CATEGORIES, SOURCES, INTENTS } from "./constants.js";
 import { todayISTymd } from "./dates.js";
 
-const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+const DEFAULT_MODEL = "openai/gpt-oss-120b";
 const ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
 function buildPrompt(text, today) {

@@ -32,4 +32,4 @@ crons = ["0 18 * * *"]
 # Non-secret vars (safe to commit).
 [vars]
 DB_NAME = "expense_tracker"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "openai/gpt-oss-120b"
