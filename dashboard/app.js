@@ -81,9 +81,8 @@ function toast(msg, sticky = false) {
 function startVoiceLog() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    // Fallback for browsers without speech recognition: type it.
-    const text = prompt("Log expense:");
-    if (text) submitExpenseText(text);
+    // Fallback for browsers without speech recognition.
+    openTextLogModal();
     return;
   }
   const r = new SR();
@@ -94,6 +93,35 @@ function startVoiceLog() {
   r.onresult = (e) => submitExpenseText(e.results[0][0].transcript);
   r.onerror = (e) => toast(e.error === "no-speech" ? "Didn't catch that — try again" : "⚠️ Voice error: " + e.error);
   r.start();
+}
+
+function openTextLogModal() {
+  const backdrop = document.createElement("div");
+  backdrop.className = "modal-backdrop";
+  backdrop.innerHTML = `
+    <div class="modal">
+      <h2>Log by text</h2>
+      <form id="t-form">
+        <input type="text" id="t-text" placeholder="e.g. spent 400 on biscuits and milk" autocomplete="off" enterkeyhint="send" />
+        <div class="modal-actions">
+          <button class="btn" type="button" id="t-cancel">Cancel</button>
+          <button class="btn btn-primary" type="submit">Log</button>
+        </div>
+      </form>
+    </div>`;
+  document.body.appendChild(backdrop);
+
+  const close = () => backdrop.remove();
+  backdrop.addEventListener("click", (ev) => { if (ev.target === backdrop) close(); });
+  backdrop.querySelector("#t-cancel").addEventListener("click", close);
+  backdrop.querySelector("#t-form").addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const text = backdrop.querySelector("#t-text").value.trim();
+    if (!text) return;
+    close();
+    submitExpenseText(text);
+  });
+  backdrop.querySelector("#t-text").focus();
 }
 
 async function submitExpenseText(text) {
@@ -283,8 +311,10 @@ function renderDashboard() {
       <div id="charts"></div>
       <div id="txns"><div class="loading">Loading…</div></div>
     </div>
+    <button class="fab fab-secondary" id="text-fab" title="Log by text" aria-label="Log by text">⌨️</button>
     <button class="fab" id="voice-fab" title="Log by voice" aria-label="Log by voice">🎤</button>`;
 
+  document.getElementById("text-fab").addEventListener("click", openTextLogModal);
   document.getElementById("voice-fab").addEventListener("click", startVoiceLog);
   document.getElementById("logout").addEventListener("click", () => {
     clearToken();

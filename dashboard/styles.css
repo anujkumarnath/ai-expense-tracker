@@ -192,6 +192,8 @@ tbody tr:hover { background: var(--bg-elev-2); }
   box-shadow: var(--shadow);
 }
 .modal h2 { margin: 0 0 16px; font-size: 1.1rem; }
+/* 16px prevents iOS Safari auto-zoom on focus */
+#t-text { font-size: 16px; }
 .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
 .modal-actions .btn { flex: 1; }
 
@@ -236,10 +238,19 @@ tbody tr:hover { background: var(--bg-elev-2); }
 .fab:hover { background: #3d7bff; }
 .fab:active { transform: scale(0.94); }
 
+.fab-secondary {
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 1.3rem;
+}
+.fab-secondary:hover { background: #232a33; }
+
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 96px;
+  bottom: calc(168px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%) translateY(16px);
   max-width: 88%;
   background: var(--bg-elev-2);
