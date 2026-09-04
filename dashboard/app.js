@@ -15,6 +15,10 @@ const CATEGORY_COLORS = {
 };
 const colorFor = (c) => CATEGORY_COLORS[c] || "#8b949e";
 
+// ---------- icons (inline SVG, feather-style) ----------
+const ICON_MIC = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`;
+const ICON_KEYBOARD = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="9" x2="6" y2="9"/><line x1="10" y1="9" x2="10" y2="9"/><line x1="14" y1="9" x2="14" y2="9"/><line x1="18" y1="9" x2="18" y2="9"/><line x1="6" y1="12" x2="6" y2="12"/><line x1="10" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="14" y2="12"/><line x1="18" y1="12" x2="18" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>`;
+
 // ---------- token ----------
 const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
 const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
@@ -311,8 +315,8 @@ function renderDashboard() {
       <div id="charts"></div>
       <div id="txns"><div class="loading">Loading…</div></div>
     </div>
-    <button class="fab fab-secondary" id="text-fab" title="Log by text" aria-label="Log by text">⌨️</button>
-    <button class="fab" id="voice-fab" title="Log by voice" aria-label="Log by voice">🎤</button>`;
+    <button class="fab fab-secondary" id="text-fab" title="Log by text" aria-label="Log by text">${ICON_KEYBOARD}</button>
+    <button class="fab" id="voice-fab" title="Log by voice" aria-label="Log by voice">${ICON_MIC}</button>`;
 
   document.getElementById("text-fab").addEventListener("click", openTextLogModal);
   document.getElementById("voice-fab").addEventListener("click", startVoiceLog);
