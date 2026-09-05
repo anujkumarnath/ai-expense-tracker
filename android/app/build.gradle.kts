@@ -37,9 +37,28 @@ android {
         )
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = localProperties.getProperty("RELEASE_STORE_FILE")
+            if (!storeFilePath.isNullOrBlank()) {
+                storeFile = rootProject.file(storeFilePath)
+                storePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            // Falls back to unsigned if local.properties has no release
+            // signing block — assembleRelease still works, just produces
+            // an APK you can't install until it's signed.
+            val hasReleaseSigning = !localProperties.getProperty("RELEASE_STORE_FILE").isNullOrBlank()
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
@@ -84,6 +103,9 @@ dependencies {
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.kotlinx.serialization.converter)
     implementation(libs.okhttp.core)
-    debugImplementation(libs.okhttp.logging.interceptor)
+    // Not debug-only: the class is referenced unconditionally in
+    // RetrofitClient.kt (guarded by BuildConfig.DEBUG at runtime, not
+    // compile time), so release needs it on the classpath too.
+    implementation(libs.okhttp.logging.interceptor)
     implementation(libs.kotlinx.serialization.json)
 }

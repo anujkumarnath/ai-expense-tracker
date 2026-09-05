@@ -70,6 +70,36 @@ async function sendParse(text) {
   return res.text();
 }
 
+// Auth is Bearer-token, not cookies, so a plain <a href> can't carry it —
+// fetch with the header, then hand the browser the bytes to save.
+async function downloadApp() {
+  const btn = document.getElementById("download-app");
+  const original = btn.textContent;
+  btn.textContent = "Downloading…";
+  btn.disabled = true;
+  try {
+    const res = await fetch(API_BASE + "/app/download", {
+      headers: { Authorization: "Bearer " + getToken() },
+    });
+    if (res.status === 401) { clearToken(); navigate("/login"); return; }
+    if (!res.ok) throw new Error("Download failed");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "expense-tracker.apk";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    toast("Couldn't download the app — try again.");
+  } finally {
+    btn.textContent = original;
+    btn.disabled = false;
+  }
+}
+
 // ---------- toast ----------
 let toastTimer = null;
 function toast(msg, sticky = false) {
@@ -294,6 +324,7 @@ function renderDashboard() {
         <div class="topbar-actions">
           <button class="btn btn-sm btn-primary" id="add-btn" style="width:auto">+ Add</button>
           <a class="btn btn-sm" id="view-report" href="/report/${reportMonthFor(v)}" data-link>Report</a>
+          <button class="btn btn-sm" id="download-app" title="Download the Android app">Get app</button>
           <button class="btn btn-sm" id="logout">Logout</button>
         </div>
       </div>
@@ -326,6 +357,7 @@ function renderDashboard() {
     navigate("/login");
   });
   document.getElementById("add-btn").addEventListener("click", openAddModal);
+  document.getElementById("download-app").addEventListener("click", downloadApp);
 
   document.getElementById("month-picker").addEventListener("change", (e) => {
     state.view = { mode: "month", month: e.target.value || currentMonthIST(), from: "", to: "" };

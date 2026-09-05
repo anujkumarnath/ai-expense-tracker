@@ -17,6 +17,7 @@ import {
   handleDeleteExpense,
   handleGetReport,
   handleGenerateReport,
+  handleAppDownload,
 } from "./handlers.js";
 
 const notImplemented = (what) =>
@@ -78,6 +79,8 @@ async function route(request, env, ctx) {
     }
     // Log writes only (skip GET polling noise from the dashboard).
     if (method !== "GET") log(`${method} ${pathname}`);
+
+    if (method === "GET" && pathname === "/app/download") return handleAppDownload(request, env);
 
     if (method === "POST" && pathname === "/parse") return handleParse(request, env, ctx);
     if (method === "GET" && pathname === "/expenses") return handleGetExpenses(request, env);

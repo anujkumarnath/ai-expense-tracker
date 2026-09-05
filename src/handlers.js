@@ -374,3 +374,17 @@ export async function handleGenerateReport(request, env, month) {
   const report = await generateMonthlyReport(env, month);
   return json(report);
 }
+
+// -------- GET /app/download --------  (auth already checked in index.js —
+// this is what actually gates the APK; run_worker_first in wrangler.toml
+// means Cloudflare never serves it directly, only through this route)
+export async function handleAppDownload(request, env) {
+  const assetUrl = new URL("/expense-tracker.apk", request.url);
+  const asset = await env.ASSETS.fetch(new Request(assetUrl, request));
+  if (!asset.ok) return json({ error: "Download not available" }, 404);
+
+  const headers = new Headers(asset.headers);
+  headers.set("Content-Type", "application/vnd.android.package-archive");
+  headers.set("Content-Disposition", 'attachment; filename="expense-tracker.apk"');
+  return new Response(asset.body, { status: asset.status, headers });
+}

@@ -6,3 +6,11 @@
 # client ID (not the Android one) — must match GOOGLE_CLIENT_ID or one of
 # GOOGLE_CLIENT_IDS on the Cloudflare Worker (see wrangler.toml).
 GOOGLE_WEB_CLIENT_ID=
+
+# Release signing (only needed to run ./gradlew assembleRelease). Generate
+# with: keytool -genkeypair -v -keystore android/keystore/release.keystore
+# -alias expensetracker-release -keyalg RSA -keysize 2048 -validity 10950
+RELEASE_STORE_FILE=keystore/release.keystore
+RELEASE_STORE_PASSWORD=
+RELEASE_KEY_ALIAS=expensetracker-release
+RELEASE_KEY_PASSWORD=

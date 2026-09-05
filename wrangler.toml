@@ -10,6 +10,15 @@ compatibility_flags = ["nodejs_compat"]
 [triggers]
 crons = ["0 18 * * *"]
 
+# Static assets (currently just the Android release APK). run_worker_first
+# means Cloudflare never auto-serves these — every request, including for
+# files in here, goes through fetch() first, so /app/download's requireAuth()
+# check actually gates the file instead of it being a plain public URL.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
 # ---------------------------------------------------------------------------
 # Secrets are NOT stored here. Set them with `wrangler secret put <NAME>`:
 #   MONGODB_URI          Atlas connection string
