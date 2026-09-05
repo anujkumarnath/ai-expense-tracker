@@ -1,7 +1,7 @@
 // Request handlers. Piece 4 implements /parse; REST endpoints come in Piece 5.
 
 import { ObjectId } from "mongodb";
-import { json, text } from "./http.js";
+import { json, text, corsHeaders } from "./http.js";
 import { withDb, expensesCol, reportsCol } from "./db.js";
 import { parseExpense } from "./llm.js";
 import { mirrorToSheets } from "./sheets.js";
@@ -386,5 +386,10 @@ export async function handleAppDownload(request, env) {
   const headers = new Headers(asset.headers);
   headers.set("Content-Type", "application/vnd.android.package-archive");
   headers.set("Content-Disposition", 'attachment; filename="expense-tracker.apk"');
+  // The dashboard fetches this cross-origin with a custom Authorization
+  // header — without CORS headers here (json()/text() add these
+  // automatically, this hand-built Response didn't), the browser blocks
+  // the response from ever reaching the page's JS.
+  for (const [key, value] of Object.entries(corsHeaders())) headers.set(key, value);
   return new Response(asset.body, { status: asset.status, headers });
 }
