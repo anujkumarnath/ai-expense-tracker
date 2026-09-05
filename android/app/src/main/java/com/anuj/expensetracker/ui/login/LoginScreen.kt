@@ -1,5 +1,6 @@
 package com.anuj.expensetracker.ui.login
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -89,7 +94,7 @@ fun LoginScreen(viewModel: LoginViewModel) {
                 onClick = ::startGoogleSignIn,
                 enabled = !uiState.loading,
                 colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = AccentOn),
-                modifier = Modifier.fillMaxWidth(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.xl, vertical = Spacing.md),
             ) {
                 if (uiState.loading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = AccentOn)
@@ -140,18 +145,34 @@ private fun TokenFallback(loading: Boolean, onSignIn: (String) -> Unit) {
     }
 }
 
-/** A minimal "G" mark — avoids bundling Google's branded asset while still
- * reading unambiguously as the Google button. */
+/** The four-color Google "G" mark, drawn on the required white backdrop
+ * regardless of button color (Google's own button guidelines call for this
+ * exact treatment) — a themed circle here is what read as a plain dark dot,
+ * since the previous version put dark-on-accent text on a dark surface. */
 @Composable
 private fun GoogleMark() {
     Box(
-        modifier = Modifier.size(18.dp).background(MaterialTheme.colorScheme.surface, CircleShape),
+        modifier = Modifier.size(20.dp).background(Color.White, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            "G",
-            style = MaterialTheme.typography.labelLarge,
-            color = AccentOn,
-        )
+        Canvas(modifier = Modifier.size(13.dp)) {
+            val strokeWidth = size.minDimension * 0.24f
+            val inset = strokeWidth / 2f
+            val arcSize = Size(size.width - strokeWidth, size.height - strokeWidth)
+            val topLeft = Offset(inset, inset)
+            val style = Stroke(strokeWidth)
+
+            drawArc(Color(0xFF4285F4), startAngle = -45f, sweepAngle = 90f, useCenter = false, topLeft = topLeft, size = arcSize, style = style)
+            drawArc(Color(0xFF34A853), startAngle = 45f, sweepAngle = 90f, useCenter = false, topLeft = topLeft, size = arcSize, style = style)
+            drawArc(Color(0xFFFBBC05), startAngle = 135f, sweepAngle = 80f, useCenter = false, topLeft = topLeft, size = arcSize, style = style)
+            drawArc(Color(0xFFEA4335), startAngle = 215f, sweepAngle = 100f, useCenter = false, topLeft = topLeft, size = arcSize, style = style)
+
+            // Crossbar — the stroke that turns the ring into a "G".
+            drawRect(
+                Color(0xFF4285F4),
+                topLeft = Offset(size.width / 2f, size.height / 2f - strokeWidth / 2f),
+                size = Size(size.width / 2f + inset, strokeWidth),
+            )
+        }
     }
 }
