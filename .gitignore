@@ -12,5 +12,9 @@ old-expenses.csv
 # local dashboard config (copy of config.example.js)
 dashboard/config.js
 
+# local Android config (copy of local.properties.example) + Android Studio's
+# own machine-specific sdk.dir
+android/local.properties
+
 # one-off migration script with personal data — kept local, not committed
 scripts/

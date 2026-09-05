@@ -1,0 +1,8 @@
+# Copy this file to local.properties (already git-ignored) and fill in
+# the values below. local.properties is also where Android Studio writes
+# sdk.dir automatically — leave that line if it's already there.
+
+# Google Cloud Console -> APIs & Services -> Credentials -> the WEB OAuth
+# client ID (not the Android one) — must match GOOGLE_CLIENT_ID or one of
+# GOOGLE_CLIENT_IDS on the Cloudflare Worker (see wrangler.toml).
+GOOGLE_WEB_CLIENT_ID=
